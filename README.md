@@ -427,4 +427,88 @@ public class IntegrationTest {
 If we run all Test at once we may get following out put from Intelij,
 ![image](https://user-images.githubusercontent.com/8769673/86367899-28941400-bc9a-11ea-8142-b5dfe3e031bd.png)
 
-So finally we came to end of the session. That all about Test Driven Development approach towards creation of Spring Boot application. 
+So finally we came to end of the session. That all about Test Driven Development approach towards creation of Spring Boot application.
+ 
+## 3.1 Add Car example
+
+Let's start from controller test again! We want to add url that can add car's name and type.
+
+```java
+    @Test
+    public void saveCar() throws Exception{
+        Car car = new Car("pulse", "hatchback");
+        car.setId(new Long(1003));
+        given(carService.saveOrUpdate(Mockito.any())).willReturn(car);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/cars/")
+                .content(asJsonString(new Car("pulse", "hatchback")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$").isMap())
+                .andDo(print());
+    }
+```
+And we create http methods POST and PUT in our CarController 
+
+```java
+    @PostMapping("/")
+    public ResponseEntity<Car> saveCar(@RequestBody Car car) {
+        return new ResponseEntity<>(carService.saveOrUpdate(car),HttpStatus.CREATED);
+    }
+
+    @PutMapping("/")
+    public ResponseEntity<Car> updateCar(@RequestBody Car car) {
+        return new ResponseEntity<>(carService.saveOrUpdate(car),HttpStatus.CREATED);
+    }
+```
+
+Good! We add two methods that help us update or create Car's data.
+That's look at what we do in CarService class.
+
+```java
+    public Car saveOrUpdate(Car car) {
+    }
+```
+We add saveOrUpdate in CarService class.
+Now that add test in CarServiceTest class.
+```java 
+    @Test
+    public void saveOrUpdateCar() {
+        given(carRepository.save(Mockito.any())).willReturn(new Car("lodgy", "SUV"));
+    
+        Car savedCar = carService.saveOrUpdate(new Car("lodgy", "SUV"));
+        assertEquals("SUV",savedCar.getType());
+    }
+``` 
+
+Let's go back and finish CarService class.
+
+```java
+    public Car saveOrUpdate(Car car) {
+        return carRepository.save(car);
+    }
+```
+
+Finally, that's checkout how to test CarResponsitory
+
+```java 
+    @Test
+    public void saveCar() {
+        Car savedCar = carRepository.save(new Car("pulse", "hatchback"));
+        Optional<Car> returnCar = carRepository.findByName("pulse");
+        assertTrue(returnCar.isPresent());
+        assertEquals(savedCar,returnCar.get());
+    }
+
+    @Test
+    public void updateCar() {
+        Optional<Car> toBeUpdatedCar = carRepository.findByName("duster");
+        toBeUpdatedCar.get().setType("SUV");
+        carRepository.save(toBeUpdatedCar.get());
+        Optional<Car> updateCar = carRepository.findByName("duster");
+        assertEquals("SUV",updateCar.get().getType());
+    }
+```
+Pretty easy!
+
