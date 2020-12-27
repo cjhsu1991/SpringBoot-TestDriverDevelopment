@@ -370,16 +370,28 @@ public class CacheTest {
 
     @Test
     void cacheTest() {
-        given(carRepository.findByName("pulse")).willReturn(Optional.of(new Car("pulse", "hatchback")));
-
-        Car car = carService.getCarDetails("pulse");
-        assertNotNull(car);
-        carService.getCarDetails("pulse");
-
-        Mockito.verify(carRepository,Mockito.times(1)).findByName("pulse");
+        List<Car> carList = new ArrayList<>();
+        carList.add(new Car("pulse", "hatchback"));
+        carList.add(new  Car("duster", "hybrid"));
+        carList.add(new Car("lodgy", "suv"));
+        given(carRepository.findAll()).willReturn(carList);
+       
+        List<Car> cars = carService.getAllCars();
+        assertNotNull(cars);
+       
+        carService.getAllCars();
+       
+        Mockito.verify(carRepository,Mockito.times(1)).findAll();
 
     }
 }
+```
+Now Let add getAllCars function in CarService class and add @Cacheable("cars") annotation. 
+```java
+    @Cacheable("cars")
+    public List<Car> getAllCars() {
+        return carRepository.findAll();
+    }
 ```
 Here with the help of Mockito's verify method we are ensuring that carRepository's findByName method is called only once,though we called carService.getCarDetails() twice.
 
