@@ -393,7 +393,7 @@ Now Let add getAllCars function in CarService class and add @Cacheable("cars") a
         return carRepository.findAll();
     }
 ```
-Here with the help of Mockito's verify method we are ensuring that carRepository's findByName method is called only once,though we called carService.getCarDetails() twice.
+Here with the help of Mockito's verify method we are ensuring that carRepository's findAll method is called only once,though we called carService.getAllCars() twice.
 
 ## 2.7 Integration Test
 Now let create IntegrationTest class to ensure entire flow is working fine.
